@@ -1,6 +1,10 @@
 package testing;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Discount {
@@ -80,4 +84,8 @@ public class Discount {
 		this.minPrice = minPrice;
 	}
 
+	public Date getEndDateObject() throws ParseException{
+		DateFormat format = new SimpleDateFormat("Y-m-d");
+		return format.parse(this.getEndDate());
+	}
 }

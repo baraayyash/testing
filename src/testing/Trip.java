@@ -1,5 +1,10 @@
 package testing;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Trip {
 	
 	private double totalPrice;
@@ -51,6 +56,11 @@ public class Trip {
 	}
 	public void setArrivaleDateString(String arrivaleDateString) {
 		this.arrivaleDateString = arrivaleDateString;
+	}
+	
+	public Date getDepauterDateObject() throws ParseException{
+		DateFormat format = new SimpleDateFormat("Y-m-d");
+		return format.parse(this.getDepauterDateString());
 	}
 
 }
