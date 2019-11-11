@@ -22,16 +22,46 @@ public class Testing {
 
 		for (Trip trip : trips) {
 			
-			Discount discount = getDiscount(trip);
+			Discount discountForTrip = null;
 			
-			if (discount != null) {
+			for (Discount discount: discounts) {
+				boolean isOriginValid = false;
+				boolean isDestinationValid = false;
+				// can be percentage?
+				if ((trip.getTotalPrice() < discount.getValue()) ||  (! discount.getAirLines().contains(trip.getAirLine())) 
+						|| (trip.getDepauterDateObject().after(discount.getEndDateObject()))) continue;
+				if (discount.getOriginAirports().contains(trip.getOriginAirportCode()) || discount.getOriginAirports().isEmpty())
+					isOriginValid = true;
+				if (discount.getDistinationAirports().contains(trip.getDestinationAirportCode()) || discount.getDistinationAirports().isEmpty())
+					isDestinationValid = true;
+				
+				if (isOriginValid && isDestinationValid) {
+					discountForTrip = discount;
+					break;
+				}
+				// can be internal trip?
+			}
+
+			
+			if (discountForTrip != null) {
 				System.out.println("found discount !");
 
-				trip.setTotalPrice(trip.getTotalPrice() - discount.getValue());
+				trip.setTotalPrice(trip.getTotalPrice() - discountForTrip.getValue());
 			} else {
-				Commission commission = getCommission(trip);
-				double commissionValue = (trip.getTotalPrice() * commission.getValue()) + trip.getTotalPrice();
-				trip.setTotalPrice(commissionValue);
+				Commission commissionForTrip = null;
+				for (Commission commission : commissions) {
+					if (commission.getAirLines().contains(trip.getAirLine()) || 
+							commission.getAirLines().isEmpty()) {
+						commissionForTrip = commission;
+						break;
+					}
+				}
+				
+				if (commissionForTrip != null) {
+					double commissionValue = (trip.getTotalPrice() * commissionForTrip.getValue()) + trip.getTotalPrice();
+					trip.setTotalPrice(commissionValue);
+				}
+				
 			}
 			
 		}
@@ -39,41 +69,10 @@ public class Testing {
 		System.out.println("done !");
 		
 	}
-	
-	private static Discount getDiscount(Trip trip) throws ParseException {
-		for (Discount discount: discounts) {
-			boolean isOriginValid = false;
-			boolean isDestinationValid = false;
-			// can be percentage?
-			if (trip.getTotalPrice() < discount.getValue()) continue;
-			if ( ! discount.getAirLines().contains(trip.getAirLine())) continue;
-			if (trip.getDepauterDateObject().after(discount.getEndDateObject())) continue;
-			if (discount.getOriginAirports().contains(trip.getOriginAirportCode()) || discount.getOriginAirports().isEmpty())
-				isOriginValid = true;
-			if (discount.getDistinationAirports().contains(trip.getDestinationAirportCode()) || discount.getDistinationAirports().isEmpty())
-				isDestinationValid = true;
-			
-			if (isOriginValid && isDestinationValid) return discount;
-			// can be internal trip?
-		}
-		
-		return null;
-	}
-	
-	private static Commission getCommission(Trip trip) {
-		for (Commission commission : commissions) {
-			if (commission.getAirLines().contains(trip.getAirLine()) || 
-					commission.getAirLines().isEmpty()
-					) return commission;
-		}
-		
-		// should never reach this
-		return null;
-	}
-	
+
 	private static void buildTrips() {
 		Trip trip = new Trip();
-		trip.setAirLine("SA");
+		trip.setAirLine("SV");
 		trip.setArrivaleDateString("2019-12-20");
 		trip.setCurrency("USD");
 		trip.setDepauterDateString("2019-12-20");
@@ -88,7 +87,7 @@ public class Testing {
 		Commission defaultCommission = new Commission();
 		defaultCommission.setValue(0.025);
 		Commission saCommission = new Commission();
-		saCommission.getAirLines().add("SA");
+		saCommission.getAirLines().add("SV");
 		saCommission.setValue(0.06);
 		// should be first
 		commissions.add(saCommission);
